@@ -274,12 +274,13 @@ mark { background: var(--gold-pale); color: var(--gold); border-radius: 2px; pad
 <script>
 (function(){
   // Draw sunflower icon onto a canvas and use as PNG
+  // Draw sunflower icon at 512px, scaled to 70% of canvas so petals fit with padding
   const SIZE = 512;
   const c = document.createElement('canvas');
   c.width = c.height = SIZE;
   const ctx = c.getContext('2d');
   const cx = SIZE/2, cy = SIZE/2;
-  const sc = SIZE/192; // scale factor
+  const sc = SIZE * 0.7 / 192; // 70% scale so flower fits inside square
   // Background
   ctx.fillStyle = '#1a8a70';
   ctx.fillRect(0, 0, SIZE, SIZE);
@@ -294,7 +295,7 @@ mark { background: var(--gold-pale); color: var(--gold); border-radius: 2px; pad
     ctx.fill();
     ctx.restore();
   }
-  // Petals - inner ring (offset 22.5deg)
+  // Petals - inner ring
   for (let i = 0; i < 8; i++) {
     ctx.save();
     ctx.translate(cx, cy);
@@ -305,7 +306,7 @@ mark { background: var(--gold-pale); color: var(--gold); border-radius: 2px; pad
     ctx.fill();
     ctx.restore();
   }
-  // Centre dark
+  // Centre
   ctx.fillStyle = '#461408';
   ctx.beginPath();
   ctx.arc(cx, cy, 30*sc, 0, Math.PI * 2);
@@ -316,6 +317,14 @@ mark { background: var(--gold-pale); color: var(--gold); border-radius: 2px; pad
   ctx.fill();
 
   const iconUrl = c.toDataURL('image/png');
+
+  // apple-touch-icon — most reliable for home screen icon on both iOS and Android Chrome
+  const ati = document.createElement('link');
+  ati.rel = 'apple-touch-icon';
+  ati.href = iconUrl;
+  document.head.appendChild(ati);
+
+  // Also inject manifest for standalone display mode
   const m = {
     name: 'Thrive',
     short_name: 'Thrive',
