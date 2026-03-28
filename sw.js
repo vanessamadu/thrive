@@ -1,4 +1,4 @@
-const CACHE = 'thrive-v1';
+const CACHE = 'thrive-v2';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', './index.html'])));
   self.skipWaiting();
@@ -10,5 +10,12 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 self.addEventListener('fetch', e => {
-  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+  // Network first, fall back to cache — ensures updates are always picked up
+  e.respondWith(
+    fetch(e.request).then(response => {
+      const clone = response.clone();
+      caches.open(CACHE).then(c => c.put(e.request, clone));
+      return response;
+    }).catch(() => caches.match(e.request))
+  );
 });
