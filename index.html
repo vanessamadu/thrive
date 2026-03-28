@@ -274,13 +274,15 @@ mark { background: var(--gold-pale); color: var(--gold); border-radius: 2px; pad
 <script>
 (function(){
   // Draw sunflower icon onto a canvas and use as PNG
+  const SIZE = 512;
   const c = document.createElement('canvas');
-  c.width = c.height = 192;
+  c.width = c.height = SIZE;
   const ctx = c.getContext('2d');
-  const cx = 96, cy = 96;
+  const cx = SIZE/2, cy = SIZE/2;
+  const sc = SIZE/192; // scale factor
   // Background
   ctx.fillStyle = '#1a8a70';
-  ctx.fillRect(0, 0, 192, 192);
+  ctx.fillRect(0, 0, SIZE, SIZE);
   // Petals - outer ring
   for (let i = 0; i < 8; i++) {
     ctx.save();
@@ -288,7 +290,7 @@ mark { background: var(--gold-pale); color: var(--gold); border-radius: 2px; pad
     ctx.rotate((i * 45) * Math.PI / 180);
     ctx.fillStyle = 'rgba(255,224,50,0.95)';
     ctx.beginPath();
-    ctx.ellipse(0, -42, 10, 28, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, -42*sc, 10*sc, 28*sc, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
@@ -299,18 +301,18 @@ mark { background: var(--gold-pale); color: var(--gold); border-radius: 2px; pad
     ctx.rotate((i * 45 + 22.5) * Math.PI / 180);
     ctx.fillStyle = 'rgba(255,200,30,0.8)';
     ctx.beginPath();
-    ctx.ellipse(0, -42, 10, 28, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, -42*sc, 10*sc, 28*sc, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
   // Centre dark
   ctx.fillStyle = '#461408';
   ctx.beginPath();
-  ctx.arc(cx, cy, 30, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 30*sc, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = '#300E04';
   ctx.beginPath();
-  ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 20*sc, 0, Math.PI * 2);
   ctx.fill();
 
   const iconUrl = c.toDataURL('image/png');
@@ -323,7 +325,6 @@ mark { background: var(--gold-pale); color: var(--gold); border-radius: 2px; pad
     theme_color: '#1a8a70',
     orientation: 'portrait',
     icons: [
-      { src: iconUrl, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
       { src: iconUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
     ]
   };
