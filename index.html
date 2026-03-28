@@ -1004,7 +1004,7 @@ function openNutrientBreakdown(key) {
           // Per serving nutrients for each ingredient, scaled by qty served
           const ingContribs = recipe.items.map(item => {
             const ing = findIngredient(item.name);
-            const amount = ing ? (ing[key] || 0) * item.grams / 100 * c.qty : 0;
+            const amount = ing ? (ing[key] || 0) * item.grams / 100 / (recipe.servings || 1) * c.qty : 0;
             return { name: item.name, amount };
           }).filter(x => x.amount > 0).sort((a, b) => b.amount - a.amount);
 
@@ -1524,7 +1524,7 @@ function saveFood(existingName) {
       S.data.customIngredients[idx] = ing;
     }
   } else {
-    if (findIngredient(name)) { alert('A food with that name already exists.'); return; }
+    if (S.data.customIngredients.find(i => i.name === name)) { alert('A food with that name already exists.'); return; }
     S.data.customIngredients.push(ing);
   }
   saveData();
@@ -2030,6 +2030,22 @@ function renderHistoryDay() {
 loadData();
 renderView();
 
+
+// Handle Android back button — go to Today rather than leaving app
+function safePushState() {
+  try { history.pushState(null, '', location.href); } catch(e) {}
+}
+window.addEventListener('popstate', () => {
+  if (S.subView) {
+    goBack();
+  } else if (S.view !== 'today') {
+    navigate('today');
+  } else {
+    return; // already on Today, let app close
+  }
+  safePushState();
+});
+safePushState();
 
 // Register service worker for proper PWA install (removes Chrome badge)
 if ('serviceWorker' in navigator) {
