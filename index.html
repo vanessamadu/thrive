@@ -434,18 +434,18 @@ const BUILT_IN = [
 const NUTRIENT_KEYS = ['protein','carbs','fibre','sugars','fat','satFat','unsatFat','omega3','iron','calcium','magnesium','vitC','vitD','folate','potassium','sodium'];
 
 const TRACKED_NUTRIENTS = [
-  {key:'protein',   label:'Protein',    unit:'g'},
-  {key:'carbs',     label:'Carbs',      unit:'g'},
-  {key:'fibre',     label:'Fibre',      unit:'g'},
-  {key:'fat',       label:'Total Fat',  unit:'g'},
-  {key:'iron',      label:'Iron',       unit:'mg'},
-  {key:'calcium',   label:'Calcium',    unit:'mg'},
-  {key:'magnesium', label:'Magnesium',  unit:'mg'},
-  {key:'vitC',      label:'Vitamin C',  unit:'mg'},
-  {key:'vitD',      label:'Vitamin D',  unit:'µg'},
-  {key:'folate',    label:'Folate',     unit:'µg'},
-  {key:'omega3',    label:'Omega-3',    unit:'mg'},
-  {key:'potassium', label:'Potassium',  unit:'mg'},
+  {key:'protein',   label:'Protein',    unit:'g',  isMicro:false},
+  {key:'carbs',     label:'Carbs',      unit:'g',  isMicro:false},
+  {key:'fibre',     label:'Fibre',      unit:'g',  isMicro:false},
+  {key:'fat',       label:'Total Fat',  unit:'g',  isMicro:false},
+  {key:'iron',      label:'Iron',       unit:'mg', isMicro:true},
+  {key:'calcium',   label:'Calcium',    unit:'mg', isMicro:true},
+  {key:'magnesium', label:'Magnesium',  unit:'mg', isMicro:true},
+  {key:'vitC',      label:'Vitamin C',  unit:'mg', isMicro:true},
+  {key:'vitD',      label:'Vitamin D',  unit:'µg', isMicro:true},
+  {key:'folate',    label:'Folate',     unit:'µg', isMicro:true},
+  {key:'omega3',    label:'Omega-3',    unit:'mg', isMicro:true},
+  {key:'potassium', label:'Potassium',  unit:'mg', isMicro:true},
 ];
 
 const ALL_NUTRIENT_DEFS = [
@@ -674,16 +674,16 @@ function fmt(v, dp=1) {
   return v < 0.05 ? '0' : v.toFixed(dp);
 }
 function pct(val, tgt) { return tgt > 0 ? val/tgt : null; }
-function barClass(p) {
+function barClass(p, isMicro=false) {
   if (p === null) return 'bar-ok';
   if (p < 0.9) return 'bar-under';
-  if (p > 1.1) return 'bar-over';
+  if (p > 1.1 && !isMicro) return 'bar-over';
   return 'bar-ok';
 }
-function statusText(p) {
+function statusText(p, isMicro=false) {
   if (p === null) return '';
   if (p < 0.9) return '⬇ top up';
-  if (p > 1.1) return '⬆ over';
+  if (p > 1.1 && !isMicro) return '⬆ over';
   return '✓ on track';
 }
 
@@ -768,9 +768,9 @@ function renderToday() {
     const tgt = S.data.targets[n.key] || 0;
     const p = pct(val, tgt);
     const pctNum = p !== null ? Math.min(Math.round(p*100), 100) : 0;
-    const cls = barClass(p);
-    const status = statusText(p);
-    const statusCol = p === null ? 'var(--muted)' : p < 0.9 ? '#c87800' : p > 1.1 ? '#2060a0' : 'var(--sage)';
+    const cls = barClass(p, n.isMicro);
+    const status = statusText(p, n.isMicro);
+    const statusCol = p === null ? 'var(--muted)' : p < 0.9 ? '#c87800' : (p > 1.1 && !n.isMicro) ? '#2060a0' : 'var(--sage)';
     barsHtml += `
       <div class="nutrient-bar-card" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="openNutrientBreakdown('${n.key}')">
         <div class="nutrient-bar-top">
@@ -1786,7 +1786,8 @@ function renderHistory() {
       const tracked = TRACKED_NUTRIENTS;
       const onTrack = tracked.filter(n => {
         const tgt = targets[n.key]||0; if(!tgt) return false;
-        const p = (entry.totals[n.key]||0)/tgt; return p>=0.9&&p<=1.1;
+        const p = (entry.totals[n.key]||0)/tgt;
+        return p >= 0.9 && (p <= 1.1 || n.isMicro);
       }).length;
       const statusColor = onTrack>=tracked.length*.75?'var(--sage)':onTrack>=tracked.length*.5?'#c0694a':'var(--muted)';
       html += `
@@ -1993,9 +1994,9 @@ function renderHistoryDay() {
     const tgt = targets[n.key] || 0;
     const p = tgt > 0 ? val / tgt : null;
     const pctNum = p !== null ? Math.min(Math.round(p * 100), 100) : 0;
-    const cls = barClass(p);
-    const status = statusText(p);
-    const statusCol = p === null ? 'var(--muted)' : p < 0.9 ? '#c87800' : p > 1.1 ? '#2060a0' : 'var(--sage)';
+    const cls = barClass(p, n.isMicro);
+    const status = statusText(p, n.isMicro);
+    const statusCol = p === null ? 'var(--muted)' : p < 0.9 ? '#c87800' : (p > 1.1 && !n.isMicro) ? '#2060a0' : 'var(--sage)';
     barsHtml += `
       <div class="nutrient-bar-card">
         <div class="nutrient-bar-top">
